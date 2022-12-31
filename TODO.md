@@ -1,5 +1,3 @@
-[x] http://ellaf.huma-num.fr/corpora/textes-mandingues/dioula-oralite-textes-narratifs/
-
-[x] http://cormand.huma-num.fr/Bamadaba/lexicon/ (Il manque les audios)
-
-[ ] https://live.bible.is/bible/BAMLSB/MRK/1?audio_type=audio_drama
+- [x] http://ellaf.huma-num.fr/corpora/textes-mandingues/dioula-oralite-textes-narratifs/
+- [x] http://cormand.huma-num.fr/Bamadaba/lexicon/ (Il manque les audios)
+- [ ] https://live.bible.is/bible/BAMLSB/MRK/1?audio_type=audio_drama
