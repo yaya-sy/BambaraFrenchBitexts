@@ -3,4 +3,5 @@
 - [ ] https://live.bible.is/bible/BAMLSB/MRK/1?audio_type=audio_drama
 - [ ] https://books.openedition.org/demopolis/515
 - [ ] http://islam.faq.free.fr/langues/bambara/lexique.htm
+- [ ] https://huggingface.co/datasets/allenai/nllb
 - [ ] https://jw.org
