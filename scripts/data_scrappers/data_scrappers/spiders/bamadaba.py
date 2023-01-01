@@ -8,17 +8,18 @@ class QuotesSpider(scrapy.Spider):
                 "ɔ", "p", "r", "s","t", "u", "w", "x", "y", "z"]
     start_urls = [f"http://cormand.huma-num.fr/Bamadaba/lexicon/{letter}.htm" for letter in alphabet]
 
-    def get_translation_definitions(self, response):
+    def get_translation_definitions(self, response, bambara_file, french_file):
         """
         Iterates over the word entries of the dictionnary
         and retrieves the examples of bambara sentences
         using these words and the french translations of these sentences.
         """
-        languages = {"Exe": "bambara", "GlFr": "french"}
+        files = {"bambara": bambara_file, "french": french_file}
+        languages = {"Exe" : "bambara", "GlFr" : "french"}
         # p.lxP2 is for the word entry in the dictionnary
         for entry in response.css("p.lxP2"):
             last_tag = None
-            sentences = {"bambara": [], "french": []}
+            sentences = {"bambara": set(), "french": set()}
             for span in entry.css("span"):
                 # we are only interested by the french and bambara sentences.
                 if span.attrib["class"] not in ["Exe", "GlFr"]:
@@ -28,56 +29,67 @@ class QuotesSpider(scrapy.Spider):
                 if last_tag == None and span.attrib["class"] == "GlFr":
                     continue
                 last_tag = span.attrib["class"]
-                sentences[languages[last_tag]].append(span.css(f"span.{last_tag}::text").get().strip())
+                for sentence in span.css(f"span.{last_tag} *::text").getall():
+                    sentences[languages[last_tag]].add(sentence)
             # if we have don't have any examples
             if not sentences["bambara"] or not sentences["french"]:
                 continue
             # sometimes the examples retrived are not aligned... we have to solve this problem.
             if len(sentences["bambara"]) != len(sentences["french"]):
                 continue
-            yield sentences
-    
-    def get_translation_audios(self, response):
-        """Get the translations in the audio examples"""
+            bambara_sentences = "\n".join(sentences["bambara"])
+            french_sentences = "\n".join(sentences["french"])
+            files["bambara"].write(bambara_sentences + "\n")
+            files["french"].write(french_sentences + "\n")
+
+    def get_translation_audios(self, response, bambara_file, french_file):
+        """Get the translations in the audio examples."""
         sentences = {"bambara" : [], "french" : []}
+        french_bambara_separator = r"\- \'|\- \‘|\- \«| ‘| \'| «"
+        grammar_pattern = r"voyelles|Verbes|personnels|Mots|infinitif|subjonctif|Construction"
         for audio_example in response.css("div.maud small"):
-            audio_capture = audio_example.css("text").getall()
+            audio_capture = audio_example.css("*::text").getall()
             if not audio_capture:
                 continue
             # a remove the note
             if "ↈ" in audio_capture:
                 audio_capture.remove("ↈ")
-            # TODO: remove the grammatical description of the example
-            # we have to check by and to remove all the grammatical description...
-            # just removing the last element is not suffiscient
-            poped = audio_capture.pop(-1)
             if not audio_capture:
                 continue
-            # TODO: sometimes we have more than one example, or different 
-            # formulations of bambara sentence translated once into french, vice-vers.
-            # We have to solve this.
-
-            # TODO: if we only have one element, the bambara sentence in the french\
-            # sentence are separated by a "-", "-/-" or just a space with citation marks ("‘", "«")
-            # we
+            # if the bambara sentence and its thranslation are in the same string
             if len(audio_capture) == 1:
-                continue
-            if len(audio_capture) == 2:
+                example = audio_capture[0]
+                separated = re.split(french_bambara_separator, example)
+                if len(separated) != 2:
+                    continue
+                sentences["bambara"].append(separated[0].strip())
+                sentences["french"].append(separated[1].strip())
+
+            elif len(audio_capture) == 2:
                 bambara, french = audio_capture
-                sentences["bambara"].append(bambara)
-                sentences["french"].append(french)
+                if re.search(grammar_pattern, french) or re.search(grammar_pattern, bambara):
+                    continue
+                if re.search(french_bambara_separator, bambara):
+                    separated = re.split(french_bambara_separator, bambara)
+                    if len(separated) != 2:
+                        continue
+                    bambara, french = separated
+                sentences["bambara"].append(bambara.strip())
+                sentences["french"].append(french.strip())
             
-            if len(audio_capture) == 3:
-                # TODO: Here we have to check many things and to solve them
+            # the last element is just a grammatical description
+            elif len(audio_capture) == 3:
+                bambara, french, _ = audio_capture
+                sentences["bambara"].append(bambara.strip())
+                sentences["french"].append(french.strip())
+            else:
+                # maybe we can try to retrieve some examples here...
                 continue
-        return sentences
+        french_file.write("\n".join(sentences["french"]))
+        bambara_file.write("\n".join(sentences["bambara"]))
 
     def parse(self, response):
         with open("../../data/bamadaba/french.txt", "a+") as french_file :
             with open("../../data/bamadaba/bambara.txt", "a+") as bambara_file :
-                for sentences in self.get_translation_definitions(response):
-                    french_file.write("\n".join(sentences["french"]))
-                    bambara_file.write("\n".join(sentences["bambara"]))
-                audio_bambara_sentences, audio_bambara_sentences = self.get_translation_audios(response)
-                bambara_file.write("\n".join(audio_bambara_sentences))
-                french_file.write("\n".join(audio_bambara_sentences))
+                self.get_translation_definitions(response, bambara_file, french_file)
+                self.get_translation_audios(response, bambara_file, french_file)
