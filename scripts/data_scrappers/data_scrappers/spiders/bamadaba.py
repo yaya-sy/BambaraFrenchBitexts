@@ -19,7 +19,7 @@ class QuotesSpider(scrapy.Spider):
         # p.lxP2 is for the word entry in the dictionnary
         for entry in response.css("p.lxP2"):
             last_tag = None
-            sentences = {"bambara": set(), "french": set()}
+            sentences = {"bambara": [], "french": []}
             for span in entry.css("span"):
                 # we are only interested by the french and bambara sentences.
                 if span.attrib["class"] not in ["Exe", "GlFr"]:
@@ -30,7 +30,7 @@ class QuotesSpider(scrapy.Spider):
                     continue
                 last_tag = span.attrib["class"]
                 for sentence in span.css(f"span.{last_tag} *::text").getall():
-                    sentences[languages[last_tag]].add(sentence)
+                    sentences[languages[last_tag]].append(sentence)
             # if we have don't have any examples
             if not sentences["bambara"] or not sentences["french"]:
                 continue
