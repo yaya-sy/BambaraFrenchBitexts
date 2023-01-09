@@ -5,3 +5,4 @@
 - [ ] http://islam.faq.free.fr/langues/bambara/lexique.htm
 - [ ] https://huggingface.co/datasets/allenai/nllb
 - [ ] https://jw.org
+- [x] http://cormande.huma-num.fr/corbama/run.cgi/first_form
