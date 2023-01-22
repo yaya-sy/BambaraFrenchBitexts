@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from shutil import copy
+from shutil import copy, move
 from pathlib import Path
 import re
 
@@ -27,13 +27,15 @@ def reorganize_files(input_folder: str,
         output_folder_file.mkdir(exist_ok=True, parents=True)
         filename = str(filename).split("_")[-1]
         filename = "french" if filename == "francais" else filename
+        suffix = "train" if suffix == "txt" else suffix
         if filename not in languages:
             continue
         if source not in ["bibleis", "cormande"]:
             copy(text_file, output_folder_file)
+            move(output_folder_file / text_file.name, output_folder_file / f"{filename}.{suffix}")
             continue
         pattern = r".*\[VERSE\]" if source == "bibleis" else (r".*\[BAM_COR\]" if filename == "bambara" else r".*\[FR_COR\]")
-        with open(output_folder_file / f"{filename}.train", "w") as output_file:
+        with open(output_folder_file / f"{filename}.{suffix}", "w") as output_file:
             for line in clean_metadata(text_file, pattern):
                 output_file.write(f"{line}\n")
 
