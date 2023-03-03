@@ -1,8 +1,0 @@
-- [x] http://ellaf.huma-num.fr/corpora/textes-mandingues/dioula-oralite-textes-narratifs/
-- [x] http://cormand.huma-num.fr/Bamadaba/lexicon/ (Il manque les audios)
-- [x] https://live.bible.is/bible/BAMLSB/MRK/1?audio_type=audio_drama (Il manque les audios)
-- [ ] https://books.openedition.org/demopolis/515
-- [ ] http://islam.faq.free.fr/langues/bambara/lexique.htm
-- [ ] https://huggingface.co/datasets/allenai/nllb
-- [ ] https://jw.org
-- [x] http://cormande.huma-num.fr/corbama/run.cgi/first_form (paires contenant l'un des 100 mots les plus fréquents en Français)
